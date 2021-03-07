@@ -5,6 +5,6 @@
 
 "# 執行：python rec.py imagename.jpg"
 
-"# ref：基於python語言使用OpenCV搭配dlib實作人臉偵測與辨識"
+"# ref：基於python語言使用OpenCV搭配dlib實作人臉偵測與辨識  https://www.tpisoftware.com/tpu/articleDetails/950"
 
  

@@ -10,6 +10,8 @@ ground true設定：
 
 ref：
 
+    [Google]: https://www.tpisoftware.com/tpu/articleDetails/950
+    [Google][]
     [基於python語言使用OpenCV搭配dlib實作人臉偵測與辨識]https://www.tpisoftware.com/tpu/articleDetails/950
 
 model下載：

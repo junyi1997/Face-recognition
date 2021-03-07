@@ -9,11 +9,11 @@
 
 "# model下載：https://github.com/davisking/dlib-models"
 
-"  使用到的model有兩個。"
+"##  使用到的model有兩個。"
 
-"  1.dlib_face_recognition_resnet_model_v1.dat.bz2"
+"###  1.dlib_face_recognition_resnet_model_v1.dat.bz2"
 
-"  2.shape_predictor_68_face_landmarks.dat.bz2
+"###  2.shape_predictor_68_face_landmarks.dat.bz2
 
 "  下載完成請務必要解壓縮放到code目錄中"
 

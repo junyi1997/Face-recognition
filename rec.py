@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import sys,os,dlib,glob,numpy
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from skimage import io
 import cv2
 import imutils

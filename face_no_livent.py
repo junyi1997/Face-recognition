@@ -1,3 +1,15 @@
+# -*- coding: UTF-8 -*-
+import sys,os,dlib,glob,numpy
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+from skimage import io
+import cv2
+import imutils
+import numpy as np
+import pickle
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.models import load_model
+REAL_THRESHOLD = 0.8 #will return fake if pred of real doesnt exceed threshold
+std_correct_time=0
 #選擇第一隻攝影機
 cap = cv2.VideoCapture(0)
 #調整預設影像大小，預設值很大，很吃效能

@@ -10,7 +10,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 REAL_THRESHOLD = 0.8 #will return fake if pred of real doesnt exceed threshold
 std_correct_time=0
-
+from ImageProcessing.camera import Camera
 # 人臉68特徵點模型路徑
 predictor_path = "shape_predictor_68_face_landmarks.dat"
 
@@ -39,7 +39,7 @@ descriptors = []
 candidate = []
 
 #選擇第一隻攝影機
-cap = cv2.VideoCapture( 0)
+cap = Camera()
 #調整預設影像大小，預設值很大，很吃效能
 cap.set(cv2. CAP_PROP_FRAME_WIDTH, 650)
 cap.set(cv2. CAP_PROP_FRAME_HEIGHT, 500)

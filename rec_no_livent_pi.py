@@ -11,6 +11,8 @@ from tensorflow.keras.models import load_model
 REAL_THRESHOLD = 0.8 #will return fake if pred of real doesnt exceed threshold
 std_correct_time=0
 from ImageProcessing.camera import Camera
+
+#1231321
 # 人臉68特徵點模型路徑
 predictor_path = "shape_predictor_68_face_landmarks.dat"
 

@@ -155,9 +155,14 @@ def SendURL(sendword):
     r = requests.get(a)
     a="http://{:}/gpio/G_off".format(IP)
     r = requests.get(a)
-    
-
   elif sendword == "off":
+    a="http://{:}/gpio/R_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/Y_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/G_off".format(IP)
+    r = requests.get(a)
+  elif sendword == "stay":
     a="http://{:}/gpio/R_off".format(IP)
     r = requests.get(a)
     a="http://{:}/gpio/Y_off".format(IP)
@@ -167,30 +172,35 @@ def SendURL(sendword):
     a="http://{:}/gpio/stay".format(IP)
     r = requests.get(a)
 
-# 針對比對資料夾裡每張圖片做比對:
-# 1.人臉偵測
-# 2.特徵點偵測
-# 3.取得描述子
-for f in glob.glob(os.path.join(faces_folder_path, "*.jpg")):
-  base = os.path.basename(f)
-  # 依序取得圖片檔案人名
-  candidate.append(os.path.splitext(base)[ 0])
-  img = io.imread(f)
-
+def fr():
+  # 針對比對資料夾裡每張圖片做比對:
   # 1.人臉偵測
-  dets = detector(img, 1)
+  # 2.特徵點偵測
+  # 3.取得描述子
+  for f in glob.glob(os.path.join(faces_folder_path, "*.jpg")):
+    base = os.path.basename(f)
+    # 依序取得圖片檔案人名
+    candidate.append(os.path.splitext(base)[ 0])
+    img = io.imread(f)
 
-  for k, d in enumerate(dets):
-    # 2.特徵點偵測
-    shape = sp(img, d)
- 
-    # 3.取得描述子，128維特徵向量
-    face_descriptor = facerec.compute_face_descriptor(img, shape)
+    # 1.人臉偵測
+    dets = detector(img, 1)
 
-    # 轉換numpy array格式
-    v = numpy.array(face_descriptor)
-    descriptors.append(v)
+    for k, d in enumerate(dets):
+      # 2.特徵點偵測
+      shape = sp(img, d)
+  
+      # 3.取得描述子，128維特徵向量
+      face_descriptor = facerec.compute_face_descriptor(img, shape)
 
+      # 轉換numpy array格式
+      v = numpy.array(face_descriptor)
+      descriptors.append(v)
+  return base,candidate,img,face_descriptor,face_descriptor
+
+
+
+base,candidate,img,face_descriptor,face_descriptor=fr()  
 #當攝影機打開時，對每個frame進行偵測
 while(cap.isOpened()):
   
@@ -204,7 +214,7 @@ while(cap.isOpened()):
 
   dist = []
   #print("len ace_rects = {:}".format(len(face_rects)))
-  if len(face_rects)==0:SendURL("off")
+  if len(face_rects)==0:SendURL("stay")
   #if " " in face_rects : print("face_rects = None")
   for k, d in enumerate(face_rects):
     
@@ -245,7 +255,7 @@ while(cap.isOpened()):
     else:                                
       std_correct_time=0
     #print("std_correct_time = {:}".format(std_correct_time))
- 
+
     if abs(x1-x2)>100 and abs(y1-y2)>100 and observed_resual!="real":
       if std_correct_time>=correct_count:
         if observed_resual!="real":SendURL("real")
@@ -277,7 +287,7 @@ while(cap.isOpened()):
     elif abs(x1-x2)<100 and abs(y1-y2)<100:
       #清除辨識結果
       observed_resual=""
-      SendURL("off")
+      SendURL("stay")
     
 
   frame = imutils.resize(frame, width = 600)
@@ -286,5 +296,5 @@ while(cap.isOpened()):
   #esc結束程式
   if cv2.waitKey( 10) == 27:
       break
-
+SendURL("off")
 cv2.destroyAllWindows()

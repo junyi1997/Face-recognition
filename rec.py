@@ -51,6 +51,9 @@ le = pickle.loads(open("./livenet/le.pickle", "rb").read())
 net = cv2.dnn.readNetFromCaffe("./livenet/detector/deploy.prototxt.txt", "./livenet/detector/res10_300x300_ssd_iter_140000.caffemodel")
 label = ""
 pred = ""
+
+observed_resual=''
+correct_count=5
 def getLiveLabelfromImgandCoords(img, startX, startY, endX, endY, cw, ch):
     global model,le,net,label,pred
     lsy = startY
@@ -98,6 +101,71 @@ def getLiveLabelfromImgandCoords(img, startX, startY, endX, endY, cw, ch):
 
     return label
 #########^0215新增防止闖關^#########  
+import os
+import time
+def UnKnow_process(frame):
+  Y=time.strftime("%Y", time.localtime()) 
+  M=time.strftime("%m", time.localtime()) 
+  D=time.strftime("%d", time.localtime()) 
+  H=time.strftime("%H", time.localtime()) 
+  Min=time.strftime("%M", time.localtime()) 
+  Sec=time.strftime("%S", time.localtime()) 
+
+  #a="{:}-{:}-{:} {:}:{:}:{:}".format(Y,M,D,H,Min,Sec)
+  path="./UnKnow/{:}-{:}-{:}".format(Y,M,D)
+  folder = os.path.exists(path)
+  #判斷結果
+  if not folder:
+      #如果不存在，則建立新目錄
+      os.makedirs(path)
+      print('-----建立成功-----')
+
+  savepath="./UnKnow/{:}-{:}-{:}/{:}h{:}m{:}s.jpg".format(Y,M,D,H,Min,Sec)
+  cv2.imwrite(savepath, frame)
+# 引入 requests 模組
+import requests
+IP="192.168.100.11"
+def SendURL(sendword):
+  #print(sendword)
+  if sendword == "real":
+    a="http://{:}/gpio/R_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/Y_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/G_on".format(IP)
+    r = requests.get(a)
+  elif sendword == "wait":
+    a="http://{:}/gpio/R_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/Y_on".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/G_off".format(IP)
+    r = requests.get(a)
+  elif sendword == "false":
+    a="http://{:}/gpio/R_on".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/Y_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/G_off".format(IP)
+    r = requests.get(a)
+  elif sendword == "UnKnow":
+    a="http://{:}/gpio/R_on".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/Y_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/G_off".format(IP)
+    r = requests.get(a)
+    
+
+  elif sendword == "off":
+    a="http://{:}/gpio/R_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/Y_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/G_off".format(IP)
+    r = requests.get(a)
+    a="http://{:}/gpio/stay".format(IP)
+    r = requests.get(a)
 
 # 針對比對資料夾裡每張圖片做比對:
 # 1.人臉偵測
@@ -125,6 +193,7 @@ for f in glob.glob(os.path.join(faces_folder_path, "*.jpg")):
 
 #當攝影機打開時，對每個frame進行偵測
 while(cap.isOpened()):
+  
   #讀出frame資訊
   ret, frame = cap.read()
   h,w,l = np.shape(img)
@@ -134,6 +203,9 @@ while(cap.isOpened()):
   face_rects, scores, idx = detector.run(frame, 0)
 
   dist = []
+  #print("len ace_rects = {:}".format(len(face_rects)))
+  if len(face_rects)==0:SendURL("off")
+  #if " " in face_rects : print("face_rects = None")
   for k, d in enumerate(face_rects):
     
     shape = sp(frame, d)
@@ -160,31 +232,52 @@ while(cap.isOpened()):
     # 取得最短距離就為辨識出的人名
     if cd_sorted != [] :
       rec_name = cd_sorted[ 0][ 0]
+    else : 
+      rec_name="UnKnow"
+      
+    if rec_name!="UnKnow":
+      observed_resual_singal=getLiveLabelfromImgandCoords(frame,x1,y1,x2,y2,w,h)
+    else:
+      observed_resual_singal="UnKnow"
 
-    observed_resual=''
-    correct_count=5
-    observed_resual_singal=getLiveLabelfromImgandCoords(frame,x1,y1,x2,y2,w,h)
     if observed_resual_singal == "real":
       std_correct_time+=1 
     else:                                
       std_correct_time=0
     #print("std_correct_time = {:}".format(std_correct_time))
+ 
     if abs(x1-x2)>100 and abs(y1-y2)>100 and observed_resual!="real":
       if std_correct_time>=correct_count:
-          observed_resual="real"
-          color=(0,255,0)#green
+        if observed_resual!="real":SendURL("real")
+        observed_resual="real"
+        color=(0,255,0)#green
+        
       elif std_correct_time>0 and std_correct_time<correct_count:
-          color=(255,128,0)#yellow
-      elif std_correct_time==0:
-          observed_resual="false"
-          color=(255,0,0)#red
+        if observed_resual!="wait":SendURL("wait")
+        observed_resual="wait"
+        color=(255,128,0)#yellow
+        
+      elif std_correct_time==0 and rec_name!="UnKnow":
+        if observed_resual!="false":SendURL("false")
+        observed_resual="false"
+        color=(255,0,0)#red
+
+      elif rec_name=="UnKnow":
+        if observed_resual!="UnKnow":
+          SendURL("UnKnow") 
+          UnKnow_process(frame)
+        observed_resual="UnKnow"
+        color=(0,0,255)#blue   
+
       # 將辨識出的人名印到圖片上面
+      
       cv2.putText(frame, rec_name, (x1, y1), cv2. FONT_HERSHEY_SIMPLEX , 1, ( 255, 255, 255), 2, cv2. LINE_AA)
       # 以方框標示偵測的人臉
       cv2.rectangle(frame, (x1, y1), (x2, y2), color, 4, cv2. LINE_AA)      
     elif abs(x1-x2)<100 and abs(y1-y2)<100:
       #清除辨識結果
       observed_resual=""
+      SendURL("off")
     
 
   frame = imutils.resize(frame, width = 600)
